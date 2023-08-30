@@ -63,11 +63,11 @@ const generateGalaxy = (parameters: IParameters) => {
     const spinAngle = r * spin;
 
     //x
-    positions[i3 + 0] = Math.cos(branchAngle) * r;
+    positions[i3 + 0] = Math.cos(branchAngle + spinAngle) * r;
     //y
     positions[i3 + 1] = 0;
     //z
-    positions[i3 + 2] = Math.sin(branchAngle) * r;
+    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * r;
   }
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
 
@@ -109,7 +109,12 @@ galaxyFolder
   .max(20)
   .step(1)
   .onFinishChange(() => generateGalaxy(parameters));
-galaxyFolder.add(parameters, "spin").min(-5).max(5).step(0.05);
+galaxyFolder
+  .add(parameters, "spin")
+  .min(-5)
+  .max(5)
+  .step(0.05)
+  .onFinishChange(() => generateGalaxy(parameters));
 /**
  * Sizes
  */
