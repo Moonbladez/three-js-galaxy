@@ -47,7 +47,7 @@ const parameters: IParameters = {
   randomnessPower: 3,
   insideColor: "#ff6030",
   outsideColor: "#1b3984",
-  rotationSpeed: 2,
+  rotationSpeed: 0.1,
 };
 
 let geometry = null as THREE.BufferGeometry | null;
