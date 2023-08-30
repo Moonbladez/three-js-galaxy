@@ -14,6 +14,8 @@ interface IParameters {
   spin: number;
   randomness: number;
   randomnessPower: number;
+  insideColor: string;
+  outsideColor: string;
 }
 
 /**
@@ -21,8 +23,6 @@ interface IParameters {
  */
 // Debug
 const gui = new GUI();
-//close
-gui.close();
 
 // Canvas
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -41,6 +41,8 @@ const parameters: IParameters = {
   spin: 1,
   randomness: 0.2,
   randomnessPower: 3,
+  insideColor: "#ff6030",
+  outsideColor: "#1b3984",
 };
 
 let geometry = null as THREE.BufferGeometry | null;
@@ -48,7 +50,7 @@ let material = null as THREE.PointsMaterial | null;
 let points = null as THREE.Points | null;
 
 const generateGalaxy = (parameters: IParameters) => {
-  const { count, radius, size, spin, branches, randomness, randomnessPower } = parameters;
+  const { count, radius, size, spin, branches, randomnessPower, insideColor, outsideColor } = parameters;
 
   if (points !== null) {
     geometry?.dispose();
@@ -58,8 +60,13 @@ const generateGalaxy = (parameters: IParameters) => {
 
   geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+
+  const colorInside = new THREE.Color(insideColor);
+  const colorOutside = new THREE.Color(outsideColor);
 
   for (let i = 0; i < count; i++) {
+    //position
     const i3 = i * 3;
 
     const r = Math.random() * radius;
@@ -71,19 +78,29 @@ const generateGalaxy = (parameters: IParameters) => {
     const randomZ = Math.pow(Math.random(), randomnessPower) * (Math.random() < 0.5 ? 1 : -1);
 
     //x
-    positions[i3 + 0] = Math.cos(branchAngle + spinAngle) * r + randomX;
+    positions[i3] = Math.cos(branchAngle + spinAngle) * r + randomX;
     //y
     positions[i3 + 1] = randomY;
     //z
     positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * r + randomZ;
+
+    //color
+    const mixedColor = colorInside.clone();
+
+    mixedColor.lerp(colorOutside, r / radius);
+    colors[i3] = mixedColor.r;
+    colors[i3 + 1] = mixedColor.g;
+    colors[i3 + 2] = mixedColor.b;
   }
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
   material = new THREE.PointsMaterial({
     size: size,
     sizeAttenuation: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
+    vertexColors: true,
   });
 
   points = new THREE.Points(geometry, material);
@@ -135,6 +152,8 @@ galaxyFolder
   .max(10)
   .step(0.1)
   .onFinishChange(() => generateGalaxy(parameters));
+galaxyFolder.addColor(parameters, "insideColor").onFinishChange(() => generateGalaxy(parameters));
+galaxyFolder.addColor(parameters, "outsideColor").onFinishChange(() => generateGalaxy(parameters));
 /**
  * Sizes
  */
