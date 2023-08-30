@@ -169,9 +169,9 @@ galaxyFolder.addColor(parameters, "insideColor").onFinishChange(() => generateGa
 galaxyFolder.addColor(parameters, "outsideColor").onFinishChange(() => generateGalaxy(parameters));
 galaxyFolder
   .add(parameters, "rotationSpeed")
-  .min(1)
-  .max(10)
-  .step(0.5)
+  .min(0)
+  .max(1)
+  .step(0.01)
   .onFinishChange(() => generateGalaxy(parameters));
 /**
  * Sizes
