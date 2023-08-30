@@ -12,6 +12,8 @@ interface IParameters {
   radius: number;
   branches: number;
   spin: number;
+  randomness: number;
+  randomnessPower: number;
 }
 
 /**
@@ -37,6 +39,8 @@ const parameters: IParameters = {
   radius: 5,
   branches: 3,
   spin: 1,
+  randomness: 0.2,
+  randomnessPower: 3,
 };
 
 let geometry = null as THREE.BufferGeometry | null;
@@ -44,7 +48,7 @@ let material = null as THREE.PointsMaterial | null;
 let points = null as THREE.Points | null;
 
 const generateGalaxy = (parameters: IParameters) => {
-  const { count, radius, size, spin, branches } = parameters;
+  const { count, radius, size, spin, branches, randomness, randomnessPower } = parameters;
 
   if (points !== null) {
     geometry?.dispose();
@@ -62,12 +66,16 @@ const generateGalaxy = (parameters: IParameters) => {
     const branchAngle = ((i % branches) / branches) * Math.PI * 2;
     const spinAngle = r * spin;
 
+    const randomX = Math.pow(Math.random(), randomnessPower) * (Math.random() < 0.5 ? 1 : -1);
+    const randomY = Math.pow(Math.random(), randomnessPower) * (Math.random() < 0.5 ? 1 : -1);
+    const randomZ = Math.pow(Math.random(), randomnessPower) * (Math.random() < 0.5 ? 1 : -1);
+
     //x
-    positions[i3 + 0] = Math.cos(branchAngle + spinAngle) * r;
+    positions[i3 + 0] = Math.cos(branchAngle + spinAngle) * r + randomX;
     //y
-    positions[i3 + 1] = 0;
+    positions[i3 + 1] = randomY;
     //z
-    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * r;
+    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * r + randomZ;
   }
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
 
@@ -114,6 +122,18 @@ galaxyFolder
   .min(-5)
   .max(5)
   .step(0.05)
+  .onFinishChange(() => generateGalaxy(parameters));
+galaxyFolder
+  .add(parameters, "randomness")
+  .min(0.1)
+  .max(2)
+  .step(0.1)
+  .onFinishChange(() => generateGalaxy(parameters));
+galaxyFolder
+  .add(parameters, "randomnessPower")
+  .min(1)
+  .max(10)
+  .step(0.1)
   .onFinishChange(() => generateGalaxy(parameters));
 /**
  * Sizes
