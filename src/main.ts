@@ -16,6 +16,7 @@ interface IParameters {
   randomnessPower: number;
   insideColor: string;
   outsideColor: string;
+  rotationSpeed: number;
 }
 
 /**
@@ -30,6 +31,9 @@ const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 // Scene
 const scene = new THREE.Scene();
 
+const galaxyGroup = new THREE.Group();
+scene.add(galaxyGroup);
+
 /**
  * Galaxy
  */
@@ -43,6 +47,7 @@ const parameters: IParameters = {
   randomnessPower: 3,
   insideColor: "#ff6030",
   outsideColor: "#1b3984",
+  rotationSpeed: 2,
 };
 
 let geometry = null as THREE.BufferGeometry | null;
@@ -55,7 +60,7 @@ const generateGalaxy = (parameters: IParameters) => {
   if (points !== null) {
     geometry?.dispose();
     material?.dispose();
-    scene.remove(points);
+    galaxyGroup.remove(points);
   }
 
   geometry = new THREE.BufferGeometry();
@@ -104,9 +109,16 @@ const generateGalaxy = (parameters: IParameters) => {
   });
 
   points = new THREE.Points(geometry, material);
-  scene.add(points);
+  galaxyGroup.add(points);
 };
 generateGalaxy(parameters);
+
+const updateRotation = () => {
+  const rotationDelta = parameters.rotationSpeed * clock.getDelta();
+
+  // Apply rotation to the galaxyGroup
+  galaxyGroup.rotation.y += rotationDelta;
+};
 
 const starsFolder = gui.addFolder("Stars").close();
 const galaxyFolder = gui.addFolder("Galaxy").close();
@@ -122,6 +134,7 @@ starsFolder
   .max(0.1)
   .step(0.001)
   .onFinishChange(() => generateGalaxy(parameters));
+
 galaxyFolder
   .add(parameters, "radius")
   .min(1)
@@ -154,6 +167,12 @@ galaxyFolder
   .onFinishChange(() => generateGalaxy(parameters));
 galaxyFolder.addColor(parameters, "insideColor").onFinishChange(() => generateGalaxy(parameters));
 galaxyFolder.addColor(parameters, "outsideColor").onFinishChange(() => generateGalaxy(parameters));
+galaxyFolder
+  .add(parameters, "rotationSpeed")
+  .min(1)
+  .max(10)
+  .step(0.5)
+  .onFinishChange(() => generateGalaxy(parameters));
 /**
  * Sizes
  */
@@ -210,6 +229,8 @@ const tick = () => {
 
   // Update controls
   controls.update();
+
+  updateRotation();
 
   // Render
   renderer.render(scene, camera);
