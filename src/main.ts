@@ -51,7 +51,7 @@ const parameters: IParameters = {
 };
 
 let geometry = null as THREE.BufferGeometry | null;
-let material = null as THREE.PointsMaterial | null;
+let material = null as THREE.ShaderMaterial | null;
 let points = null as THREE.Points | null;
 
 const generateGalaxy = (parameters: IParameters) => {
@@ -100,12 +100,29 @@ const generateGalaxy = (parameters: IParameters) => {
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
-  material = new THREE.PointsMaterial({
-    size: size,
-    sizeAttenuation: true,
+  material = new THREE.ShaderMaterial({
     depthWrite: false,
     blending: THREE.AdditiveBlending,
     vertexColors: true,
+
+    vertexShader: `
+      void main() {
+        vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+        vec4 viewPosition = viewMatrix * modelPosition;
+        vec4 projectedPosition = projectionMatrix * viewPosition;
+
+        gl_Position = projectedPosition;
+
+        gl_PointSize = 1.0;
+        
+      }
+    `,
+
+    fragmentShader: `
+      void main() {
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      }
+    `,
   });
 
   points = new THREE.Points(geometry, material);
@@ -228,7 +245,7 @@ const tick = () => {
   // Update controls
   controls.update();
 
-  updateRotation();
+  // updateRotation();
 
   // Render
   renderer.render(scene, camera);
