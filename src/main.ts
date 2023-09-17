@@ -68,6 +68,7 @@ const generateGalaxy = (parameters: IParameters) => {
   geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
+  const scales = new Float32Array(count);
 
   const colorInside = new THREE.Color(insideColor);
   const colorOutside = new THREE.Color(outsideColor);
@@ -98,9 +99,14 @@ const generateGalaxy = (parameters: IParameters) => {
     colors[i3] = mixedColor.r;
     colors[i3 + 1] = mixedColor.g;
     colors[i3 + 2] = mixedColor.b;
+
+    //scale
+    scales[i] = Math.random() * size;
   }
+
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute("aScale", new THREE.BufferAttribute(colors, 1));
 
   material = new THREE.ShaderMaterial({
     depthWrite: false,
@@ -108,12 +114,16 @@ const generateGalaxy = (parameters: IParameters) => {
     vertexColors: true,
     vertexShader: galaxyVertexShader,
     fragmentShader: galaxyFragmentShader,
+
+    uniforms: {
+      uSize: { value: 2 * renderer.getPixelRatio() },
+      uTime: { value: 0 },
+    },
   });
 
   points = new THREE.Points(geometry, material);
   galaxyGroup.add(points);
 };
-generateGalaxy(parameters);
 
 const updateRotation = () => {
   const rotationDelta = parameters.rotationSpeed * clock.getDelta();
@@ -220,6 +230,8 @@ const renderer = new THREE.WebGLRenderer({
 renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+generateGalaxy(parameters);
 
 /**
  * Animate
